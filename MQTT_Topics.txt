@@ -1,0 +1,6 @@
+MQTT_Topics:
+zubereiten_start = Startbutten auf Touchdisplay
+zutaten = Mengen der Zutaten vom Touchdisplay
+hand = Pumpen werden von Hand angesteuert(Reinigen/Vorfüllen)
+statusmeldungen = Statusmeldungen z.B. Glas vorhanden
+mengen_doku = Mengen für die Datenbank versenden
