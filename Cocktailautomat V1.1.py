@@ -10,7 +10,8 @@ import network
 import ujson
 import time
 from umqtt.simple import MQTTClient
-from machine import Pin
+from machine import Pin, I2C
+from vl53l0x import VL53L0X
 
 #-------------------- Pins -------------------
 
@@ -22,8 +23,8 @@ pumpe_3 = Pin(37, Pin.OUT)
 pumpe_4 = Pin(38, Pin.OUT)
 pumpe_5 = Pin(39, Pin.OUT)
 pumpe_6 = Pin(40, Pin.OUT)
-pumpe_7 = Pin(41, Pin.OUT)
-pumpe_6 = Pin(42, Pin.OUT)
+pumpe_7 = Pin(2, Pin.OUT)
+pumpe_8 = Pin(1, Pin.OUT)
 
 #Digitaleingänge
 
@@ -39,11 +40,15 @@ WIFI_ssid = "FRITZ!Box 7530 RR"
 WIFI_password = "67307380203238062131"
 ip_adresse_mqtt_server = "192.168.178.36"
 mqtt_client_id = "esp32_cocktailautomat"
-mqtt_topic_zubereiten_start = "zubetreiten_start"
+mqtt_topic_zubereiten_start = "zubereiten_start"
 mqtt_topic_zutaten = "zutaten"
 mqtt_topic_hand = "hand"
 mqtt_topic_statusmeldungen = "statusmeldungen"
 mqtt_topic_mengen_doku = "mengen_doku"
+
+#-------------------- Pumpenleitung in cl/min -------------------
+
+pumpenleistung = 15
 
 #-------------------- Globale Variablen -------------------
 
@@ -73,6 +78,14 @@ pumpe_5_hand = "OFF"
 pumpe_6_hand = "OFF"
 pumpe_7_hand = "OFF"
 pumpe_8_hand = "OFF"
+dosierung_zutat_1 = 0
+dosierung_zutat_2 = 0
+dosierung_zutat_3 = 0
+dosierung_zutat_4 = 0
+dosierung_zutat_5 = 0
+dosierung_zutat_6 = 0
+dosierung_zutat_7 = 0
+dosierung_zutat_8 = 0
 
 #---------- I2C erzeugen ----------
 
@@ -96,14 +109,14 @@ def sub_zutaten(topic, msg):
     global zutat_1, zutat_2, zutat_3, zutat_4, zutat_5, zutat_6, zutat_7, zutat_8
     try:
         daten = ujson.loads(msg)
-        zutat_1 = daten.get("zutat_1")
-        zutat_2 = daten.get("zutat_2")
-        zutat_3 = daten.get("zutat_3")
-        zutat_4 = daten.get("zutat_4")
-        zutat_5 = daten.get("zutat_5")
-        zutat_6 = daten.get("zutat_6")
-        zutat_7 = daten.get("zutat_7")
-        zutat_8 = daten.get("zutat_8")
+        zutat_1 = daten.get("zutat_1", 0)
+        zutat_2 = daten.get("zutat_2", 0)
+        zutat_3 = daten.get("zutat_3", 0)
+        zutat_4 = daten.get("zutat_4", 0)
+        zutat_5 = daten.get("zutat_5", 0)
+        zutat_6 = daten.get("zutat_6", 0)
+        zutat_7 = daten.get("zutat_7", 0)
+        zutat_8 = daten.get("zutat_8", 0)
         print("Zutat 1:", zutat_1)
         print("Zutat 2:", zutat_2)
         print("Zutat 3:", zutat_3)
@@ -121,7 +134,7 @@ def sub_zubereitung_start(topic, msg):
     global start_button
     try:
         daten = ujson.loads(msg)
-        start_button = daten.get("Start_Button")
+        start_button = daten.get("Start_Button", "OFF")
         print("Startbutton:", start_button)
     except Exception as e:
         print("Fehler beim Parsen:", e)
@@ -129,27 +142,32 @@ def sub_zubereitung_start(topic, msg):
 #---------- Subprogramm Handbetrieb ----------
 
 def sub_handbetrieb(topic, msg):
-    global pumpe_1_hand, pumpe_2_hand, pumpe_3_hand, pumpe_4_hand, pumpe_5_hand, pumpe_6_hand, pumpe_7_hand, pumpe_8_hand
+    global pumpe_1_hand, pumpe_2_hand, pumpe_3_hand, pumpe_4_hand
+    global pumpe_5_hand, pumpe_6_hand, pumpe_7_hand, pumpe_8_hand
+
     try:
         daten = ujson.loads(msg)
-        pumpe_1_hand = daten.get("Pumpe1")
-        pumpe_2_hand = daten.get("Pumpe2")
-        pumpe_3_hand = daten.get("Pumpe3")
-        pumpe_4_hand = daten.get("Pumpe4")
-        pumpe_5_hand = daten.get("Pumpe5")
-        pumpe_6_hand = daten.get("Pumpe6")
-        pumpe_7_hand = daten.get("Pumpe7")
-        pumpe_8_hand = daten.get("Pumpe8")
-        print("Pumpe 1 Hand", pumpe_1_hand)
-        print("Pumpe 2 Hand", pumpe_2_hand)
-        print("Pumpe 3 Hand", pumpe_3_hand)
-        print("Pumpe 4 Hand", pumpe_4_hand)
-        print("Pumpe 5 Hand", pumpe_5_hand)
-        print("Pumpe 6 Hand", pumpe_6_hand)
-        print("Pumpe 7 Hand", pumpe_7_hand)
-        print("Pumpe 8 Hand", pumpe_8_hand)
+        
+        pumpe_1_hand = daten.get("Pumpe1", "OFF")
+        pumpe_2_hand = daten.get("Pumpe2", "OFF")
+        pumpe_3_hand = daten.get("Pumpe3", "OFF")
+        pumpe_4_hand = daten.get("Pumpe4", "OFF")
+        pumpe_5_hand = daten.get("Pumpe5", "OFF")
+        pumpe_6_hand = daten.get("Pumpe6", "OFF")
+        pumpe_7_hand = daten.get("Pumpe7", "OFF")
+        pumpe_8_hand = daten.get("Pumpe8", "OFF")
+
+        pumpe_1.value(1 if pumpe_1_hand == "ON" else 0)
+        pumpe_2.value(1 if pumpe_2_hand == "ON" else 0)
+        pumpe_3.value(1 if pumpe_3_hand == "ON" else 0)
+        pumpe_4.value(1 if pumpe_4_hand == "ON" else 0)
+        pumpe_5.value(1 if pumpe_5_hand == "ON" else 0)
+        pumpe_6.value(1 if pumpe_6_hand == "ON" else 0)
+        pumpe_7.value(1 if pumpe_7_hand == "ON" else 0)
+        pumpe_8.value(1 if pumpe_8_hand == "ON" else 0)
+
     except Exception as e:
-        print("Fehler beim Parsen:", e)
+        print("Fehler beim Parsen oder Setzen:", e)
 
 #---------- Subprogramm globale Topicabfrage ----------
 
@@ -190,8 +208,72 @@ mqtt_client.subscribe(mqtt_topic_hand)
 while True:
     try:
         mqtt_client.check_msg()
+        
        
     except OSError as e:
         print("MQTT Fehler:", e)
         reconnect()
+   
+   #Dosierung ausrechen (Pumpenlaufzeit)
+    dosierung_zutat_1 = zutat_1 / pumpenleistung
+    dosierung_zutat_2 = zutat_2 / pumpenleistung
+    dosierung_zutat_3 = zutat_3 / pumpenleistung
+    dosierung_zutat_4 = zutat_4 / pumpenleistung
+    dosierung_zutat_5 = zutat_5 / pumpenleistung
+    dosierung_zutat_6 = zutat_6 / pumpenleistung
+    dosierung_zutat_7 = zutat_7 / pumpenleistung
+    dosierung_zutat_8 = zutat_8 / pumpenleistung
+    
+    # Automatisch mischen
+    
+    if start_button == "ON":
+        print("Zubereitung wird gestartet...")
+        # Zeitberechnung pro Pumpe in Sekunden
+        dosierung_zutat_1 = zutat_1 / pumpenleistung
+        dosierung_zutat_2 = zutat_2 / pumpenleistung
+        dosierung_zutat_3 = zutat_3 / pumpenleistung
+        dosierung_zutat_4 = zutat_4 / pumpenleistung
+        dosierung_zutat_5 = zutat_5 / pumpenleistung
+        dosierung_zutat_6 = zutat_6 / pumpenleistung
+        dosierung_zutat_7 = zutat_7 / pumpenleistung
+        dosierung_zutat_8 = zutat_8 / pumpenleistung
 
+        pumpe_1.value(1)
+        time.sleep(dosierung_zutat_1 * 60)
+        pumpe_1.value(0)
+
+        pumpe_2.value(1)
+        time.sleep(dosierung_zutat_2 * 60)
+        pumpe_2.value(0)
+
+        pumpe_3.value(1)
+        time.sleep(dosierung_zutat_3 * 60)
+        pumpe_3.value(0)
+
+        pumpe_4.value(1)
+        time.sleep(dosierung_zutat_4 * 60)
+        pumpe_4.value(0)
+
+        pumpe_5.value(1)
+        time.sleep(dosierung_zutat_5 * 60)
+        pumpe_5.value(0)
+
+        pumpe_6.value(1)
+        time.sleep(dosierung_zutat_6 * 60)
+        pumpe_6.value(0)
+
+        pumpe_7.value(1)
+        time.sleep(dosierung_zutat_7 * 60)
+        pumpe_7.value(0)
+
+        pumpe_8.value(1)
+        time.sleep(dosierung_zutat_8 * 60)
+        pumpe_8.value(0)
+
+        mqtt_client.publish(mqtt_topic_zubereiten_start, ujson.dumps({"Start_Button": "OFF"}))
+        start_button = "OFF"
+
+    time.sleep(0.1)
+        
+   
+   
