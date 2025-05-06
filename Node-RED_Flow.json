@@ -1,0 +1,1190 @@
+[
+    {
+        "id": "db1b9add2227c471",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "afedc03c97ed3c5a",
+        "type": "mqtt out",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "topic": "zutaten",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "45d1cbe68753b295",
+        "x": 1020,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "1d1f7bdc72f20559",
+        "type": "debug",
+        "z": "db1b9add2227c471",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1020,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "6903105758db1f44",
+        "type": "function",
+        "z": "db1b9add2227c471",
+        "name": "function 1",
+        "func": "msg.payload = { \"zutat_1\": msg.payload };\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 280,
+        "y": 80,
+        "wires": [
+            [
+                "ee50b822db54110f"
+            ]
+        ]
+    },
+    {
+        "id": "400a4acbe2e05220",
+        "type": "function",
+        "z": "db1b9add2227c471",
+        "name": "function 2",
+        "func": "msg.payload = { \"zutat_2\": msg.payload };\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 280,
+        "y": 140,
+        "wires": [
+            [
+                "ee50b822db54110f"
+            ]
+        ]
+    },
+    {
+        "id": "ee50b822db54110f",
+        "type": "join",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "mode": "custom",
+        "build": "merged",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "useparts": false,
+        "accumulate": true,
+        "timeout": "",
+        "count": "1",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 670,
+        "y": 280,
+        "wires": [
+            [
+                "afedc03c97ed3c5a",
+                "1d1f7bdc72f20559"
+            ]
+        ]
+    },
+    {
+        "id": "8bd4d8deb6c33d66",
+        "type": "function",
+        "z": "db1b9add2227c471",
+        "name": "function 3",
+        "func": "msg.payload = { \"zutat_3\": msg.payload };\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 280,
+        "y": 200,
+        "wires": [
+            [
+                "ee50b822db54110f"
+            ]
+        ]
+    },
+    {
+        "id": "f474edd2df10de0f",
+        "type": "ui_button",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "group": "bd21a9f89acc2b53",
+        "order": 11,
+        "width": 10,
+        "height": 1,
+        "passthru": false,
+        "label": "Start Zubereitung",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "{\"Start_Button\":\"ON\"}",
+        "payloadType": "json",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 150,
+        "y": 560,
+        "wires": [
+            [
+                "168da149d5822455",
+                "43ffde6714131dbb"
+            ]
+        ]
+    },
+    {
+        "id": "4a9395e2e9c5407b",
+        "type": "ui_numeric",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "label": "Zutat 1",
+        "tooltip": "",
+        "group": "bd21a9f89acc2b53",
+        "order": 2,
+        "width": 5,
+        "height": 1,
+        "wrap": false,
+        "passthru": true,
+        "topic": "topic",
+        "topicType": "msg",
+        "format": "{{value}} cl",
+        "min": 0,
+        "max": "25",
+        "step": "1",
+        "className": "",
+        "x": 120,
+        "y": 80,
+        "wires": [
+            [
+                "6903105758db1f44"
+            ]
+        ]
+    },
+    {
+        "id": "a30cdffd3d55adf7",
+        "type": "ui_numeric",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "label": "Zutat 2",
+        "tooltip": "",
+        "group": "bd21a9f89acc2b53",
+        "order": 3,
+        "width": 5,
+        "height": 1,
+        "wrap": false,
+        "passthru": true,
+        "topic": "topic",
+        "topicType": "msg",
+        "format": "{{value}} cl",
+        "min": 0,
+        "max": "25",
+        "step": "1",
+        "className": "",
+        "x": 120,
+        "y": 140,
+        "wires": [
+            [
+                "400a4acbe2e05220"
+            ]
+        ]
+    },
+    {
+        "id": "168da149d5822455",
+        "type": "mqtt out",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "topic": "zubereiten_start",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "45d1cbe68753b295",
+        "x": 1040,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "7e30e001f9f7c8f5",
+        "type": "ui_numeric",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "label": "Zutat 3",
+        "tooltip": "",
+        "group": "bd21a9f89acc2b53",
+        "order": 4,
+        "width": 5,
+        "height": 1,
+        "wrap": false,
+        "passthru": true,
+        "topic": "topic",
+        "topicType": "msg",
+        "format": "{{value}} cl",
+        "min": 0,
+        "max": "25",
+        "step": "1",
+        "className": "",
+        "x": 120,
+        "y": 200,
+        "wires": [
+            [
+                "8bd4d8deb6c33d66"
+            ]
+        ]
+    },
+    {
+        "id": "63c53e512c784346",
+        "type": "ui_numeric",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "label": "Zutat 4",
+        "tooltip": "",
+        "group": "bd21a9f89acc2b53",
+        "order": 5,
+        "width": 5,
+        "height": 1,
+        "wrap": false,
+        "passthru": true,
+        "topic": "topic",
+        "topicType": "msg",
+        "format": "{{value}} cl",
+        "min": 0,
+        "max": "25",
+        "step": 1,
+        "className": "",
+        "x": 120,
+        "y": 260,
+        "wires": [
+            [
+                "87f99b39614c8ba3"
+            ]
+        ]
+    },
+    {
+        "id": "42ad6d2c0b73d670",
+        "type": "ui_numeric",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "label": "Zutat 5",
+        "tooltip": "",
+        "group": "bd21a9f89acc2b53",
+        "order": 6,
+        "width": 5,
+        "height": 1,
+        "wrap": false,
+        "passthru": true,
+        "topic": "topic",
+        "topicType": "msg",
+        "format": "{{value}} cl",
+        "min": 0,
+        "max": "25",
+        "step": 1,
+        "className": "",
+        "x": 120,
+        "y": 320,
+        "wires": [
+            [
+                "df97bbe5bfc293c4"
+            ]
+        ]
+    },
+    {
+        "id": "ca232e188e244ab1",
+        "type": "ui_numeric",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "label": "Zutat 6",
+        "tooltip": "",
+        "group": "bd21a9f89acc2b53",
+        "order": 7,
+        "width": 5,
+        "height": 1,
+        "wrap": false,
+        "passthru": true,
+        "topic": "topic",
+        "topicType": "msg",
+        "format": "{{value}} cl",
+        "min": 0,
+        "max": "25",
+        "step": 1,
+        "className": "",
+        "x": 120,
+        "y": 380,
+        "wires": [
+            [
+                "a7216f570c3f9f86"
+            ]
+        ]
+    },
+    {
+        "id": "7d95e54aa13e229f",
+        "type": "ui_numeric",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "label": "Zutat 7",
+        "tooltip": "",
+        "group": "bd21a9f89acc2b53",
+        "order": 9,
+        "width": 5,
+        "height": 1,
+        "wrap": false,
+        "passthru": true,
+        "topic": "topic",
+        "topicType": "msg",
+        "format": "{{value}} cl",
+        "min": 0,
+        "max": "25",
+        "step": 1,
+        "className": "",
+        "x": 120,
+        "y": 440,
+        "wires": [
+            [
+                "4356637ba79aedf1"
+            ]
+        ]
+    },
+    {
+        "id": "829a7745096e0517",
+        "type": "ui_numeric",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "label": "Zutat 8",
+        "tooltip": "",
+        "group": "bd21a9f89acc2b53",
+        "order": 10,
+        "width": 5,
+        "height": 1,
+        "wrap": false,
+        "passthru": true,
+        "topic": "topic",
+        "topicType": "msg",
+        "format": "{{value}} cl",
+        "min": 0,
+        "max": "25",
+        "step": 1,
+        "className": "",
+        "x": 120,
+        "y": 500,
+        "wires": [
+            [
+                "2abbd6146df00cd7"
+            ]
+        ]
+    },
+    {
+        "id": "87f99b39614c8ba3",
+        "type": "function",
+        "z": "db1b9add2227c471",
+        "name": "function 4",
+        "func": "msg.payload = { \"zutat_4\": msg.payload };\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 280,
+        "y": 260,
+        "wires": [
+            [
+                "ee50b822db54110f"
+            ]
+        ]
+    },
+    {
+        "id": "df97bbe5bfc293c4",
+        "type": "function",
+        "z": "db1b9add2227c471",
+        "name": "function 5",
+        "func": "msg.payload = { \"zutat_5\": msg.payload };\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 280,
+        "y": 320,
+        "wires": [
+            [
+                "ee50b822db54110f"
+            ]
+        ]
+    },
+    {
+        "id": "a7216f570c3f9f86",
+        "type": "function",
+        "z": "db1b9add2227c471",
+        "name": "function 6",
+        "func": "msg.payload = { \"zutat_6\": msg.payload };\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 280,
+        "y": 380,
+        "wires": [
+            [
+                "ee50b822db54110f"
+            ]
+        ]
+    },
+    {
+        "id": "4356637ba79aedf1",
+        "type": "function",
+        "z": "db1b9add2227c471",
+        "name": "function 7",
+        "func": "msg.payload = { \"zutat_7\": msg.payload };\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 280,
+        "y": 440,
+        "wires": [
+            [
+                "ee50b822db54110f"
+            ]
+        ]
+    },
+    {
+        "id": "2abbd6146df00cd7",
+        "type": "function",
+        "z": "db1b9add2227c471",
+        "name": "function 8",
+        "func": "msg.payload = { \"zutat_8\": msg.payload };\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 280,
+        "y": 500,
+        "wires": [
+            [
+                "ee50b822db54110f"
+            ]
+        ]
+    },
+    {
+        "id": "a6b0af04ee4f7e40",
+        "type": "ui_switch",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "label": "Pumpe 1",
+        "tooltip": "",
+        "group": "5a3eb4f9d11c8c62",
+        "order": 1,
+        "width": 5,
+        "height": 1,
+        "passthru": true,
+        "decouple": "false",
+        "topic": "topic",
+        "topicType": "msg",
+        "style": "",
+        "onvalue": "{\"Pumpe1\":\"ON\"}",
+        "onvalueType": "json",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "{\"Pumpe1\":\"OFF\"}",
+        "offvalueType": "json",
+        "officon": "",
+        "offcolor": "",
+        "animate": false,
+        "className": "",
+        "x": 120,
+        "y": 1080,
+        "wires": [
+            [
+                "e4adcf4b340d1594"
+            ]
+        ]
+    },
+    {
+        "id": "df6f389cfe4d5837",
+        "type": "ui_switch",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "label": "Pumpe 3",
+        "tooltip": "",
+        "group": "5a3eb4f9d11c8c62",
+        "order": 3,
+        "width": 5,
+        "height": 1,
+        "passthru": true,
+        "decouple": "false",
+        "topic": "topic",
+        "topicType": "msg",
+        "style": "",
+        "onvalue": "{\"Pumpe3\":\"ON\"}",
+        "onvalueType": "json",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "{\"Pumpe3\":\"OFF\"}",
+        "offvalueType": "json",
+        "officon": "",
+        "offcolor": "",
+        "animate": false,
+        "className": "",
+        "x": 120,
+        "y": 1200,
+        "wires": [
+            [
+                "e4adcf4b340d1594"
+            ]
+        ]
+    },
+    {
+        "id": "0a11663159cf1393",
+        "type": "ui_switch",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "label": "Pumpe 4",
+        "tooltip": "",
+        "group": "5a3eb4f9d11c8c62",
+        "order": 4,
+        "width": 5,
+        "height": 1,
+        "passthru": true,
+        "decouple": "false",
+        "topic": "topic",
+        "topicType": "msg",
+        "style": "",
+        "onvalue": "{\"Pumpe4\":\"ON\"}",
+        "onvalueType": "json",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "{\"Pumpe4\":\"OFF\"}",
+        "offvalueType": "json",
+        "officon": "",
+        "offcolor": "",
+        "animate": false,
+        "className": "",
+        "x": 120,
+        "y": 1260,
+        "wires": [
+            [
+                "e4adcf4b340d1594"
+            ]
+        ]
+    },
+    {
+        "id": "a297bdee1aa61bb6",
+        "type": "ui_switch",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "label": "Pumpe 5",
+        "tooltip": "",
+        "group": "5a3eb4f9d11c8c62",
+        "order": 5,
+        "width": 5,
+        "height": 1,
+        "passthru": true,
+        "decouple": "false",
+        "topic": "topic",
+        "topicType": "msg",
+        "style": "",
+        "onvalue": "{\"Pumpe5\":\"ON\"}",
+        "onvalueType": "json",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "{\"Pumpe5\":\"OFF\"}",
+        "offvalueType": "json",
+        "officon": "",
+        "offcolor": "",
+        "animate": false,
+        "className": "",
+        "x": 120,
+        "y": 1320,
+        "wires": [
+            [
+                "e4adcf4b340d1594"
+            ]
+        ]
+    },
+    {
+        "id": "026d13878f5b4851",
+        "type": "ui_switch",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "label": "Pumpe 6",
+        "tooltip": "",
+        "group": "5a3eb4f9d11c8c62",
+        "order": 6,
+        "width": 5,
+        "height": 1,
+        "passthru": true,
+        "decouple": "false",
+        "topic": "topic",
+        "topicType": "msg",
+        "style": "",
+        "onvalue": "{\"Pumpe6\":\"ON\"}",
+        "onvalueType": "json",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "{\"Pumpe6\":\"OFF\"}",
+        "offvalueType": "json",
+        "officon": "",
+        "offcolor": "",
+        "animate": false,
+        "className": "",
+        "x": 120,
+        "y": 1380,
+        "wires": [
+            [
+                "e4adcf4b340d1594"
+            ]
+        ]
+    },
+    {
+        "id": "7adc7a2aef2367b5",
+        "type": "ui_switch",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "label": "Pumpe 7",
+        "tooltip": "",
+        "group": "5a3eb4f9d11c8c62",
+        "order": 7,
+        "width": 5,
+        "height": 1,
+        "passthru": true,
+        "decouple": "false",
+        "topic": "topic",
+        "topicType": "msg",
+        "style": "",
+        "onvalue": "{\"Pumpe7\":\"ON\"}",
+        "onvalueType": "json",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "{\"Pumpe7\":\"OFF\"}",
+        "offvalueType": "json",
+        "officon": "",
+        "offcolor": "",
+        "animate": false,
+        "className": "",
+        "x": 120,
+        "y": 1440,
+        "wires": [
+            [
+                "e4adcf4b340d1594"
+            ]
+        ]
+    },
+    {
+        "id": "82ac18f6e6224e45",
+        "type": "ui_switch",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "label": "Pumpe 8",
+        "tooltip": "",
+        "group": "5a3eb4f9d11c8c62",
+        "order": 8,
+        "width": 5,
+        "height": 1,
+        "passthru": true,
+        "decouple": "false",
+        "topic": "topic",
+        "topicType": "msg",
+        "style": "",
+        "onvalue": "{\"Pumpe8\":\"ON\"}",
+        "onvalueType": "json",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "{\"Pumpe8\":\"OFF\"}",
+        "offvalueType": "json",
+        "officon": "",
+        "offcolor": "",
+        "animate": false,
+        "className": "",
+        "x": 120,
+        "y": 1500,
+        "wires": [
+            [
+                "e4adcf4b340d1594"
+            ]
+        ]
+    },
+    {
+        "id": "e4adcf4b340d1594",
+        "type": "join",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "mode": "custom",
+        "build": "merged",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "useparts": false,
+        "accumulate": true,
+        "timeout": "",
+        "count": "1",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 650,
+        "y": 1300,
+        "wires": [
+            [
+                "4be26af7393b6d5e",
+                "76b1eefa1ea7eeef"
+            ]
+        ]
+    },
+    {
+        "id": "4be26af7393b6d5e",
+        "type": "mqtt out",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "topic": "hand",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "45d1cbe68753b295",
+        "x": 1010,
+        "y": 1300,
+        "wires": []
+    },
+    {
+        "id": "43ffde6714131dbb",
+        "type": "debug",
+        "z": "db1b9add2227c471",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1020,
+        "y": 640,
+        "wires": []
+    },
+    {
+        "id": "76b1eefa1ea7eeef",
+        "type": "debug",
+        "z": "db1b9add2227c471",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1020,
+        "y": 1380,
+        "wires": []
+    },
+    {
+        "id": "2cd78e62eddf81de",
+        "type": "mqtt in",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "topic": "mengen_doku",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "45d1cbe68753b295",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 130,
+        "y": 1560,
+        "wires": [
+            [
+                "b49cda2b1a9faa02"
+            ]
+        ]
+    },
+    {
+        "id": "b49cda2b1a9faa02",
+        "type": "function",
+        "z": "db1b9add2227c471",
+        "name": "function 9",
+        "func": "let zutat1 = msg.payload.Zutat1;\nlet zutat2 = msg.payload.Zutat2;\nlet zutat3 = msg.payload.Zutat3;\nlet zutat4 = msg.payload.Zutat4;\nlet zutat5 = msg.payload.Zutat5;\nlet zutat6 = msg.payload.Zutat6;\nlet zutat7 = msg.payload.Zutat7;\nlet zutat8 = msg.payload.Zutat8;\n\n// Timestamp in einem Format, das SQLite verarbeiten kann (YYYY-MM-DD HH:MM:SS)\nlet timestamp = new Date().toISOString().replace(\"T\", \" \").substring(0, 19);\n\nmsg.topic = \"INSERT INTO cocktails_zutaten (Zutat1, Zutat2, Zutat3, Zutat4, Zutat5, Zutat6, Zutat7, Zutat8, Zeit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)\";\nmsg.payload = [zutat1, zutat2, zutat3, zutat4, zutat5, zutat6, zutat7, zutat8, timestamp];\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 320,
+        "y": 1560,
+        "wires": [
+            [
+                "5a9fff05039cee07",
+                "b769c1329484afd2"
+            ]
+        ]
+    },
+    {
+        "id": "5a9fff05039cee07",
+        "type": "mysql",
+        "z": "db1b9add2227c471",
+        "mydb": "d2829fd26e2a897e",
+        "name": "",
+        "x": 790,
+        "y": 1560,
+        "wires": [
+            [
+                "b1f2b66c5132c54b"
+            ]
+        ]
+    },
+    {
+        "id": "b1f2b66c5132c54b",
+        "type": "debug",
+        "z": "db1b9add2227c471",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1020,
+        "y": 1560,
+        "wires": []
+    },
+    {
+        "id": "b769c1329484afd2",
+        "type": "debug",
+        "z": "db1b9add2227c471",
+        "name": "debug 5",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1020,
+        "y": 1620,
+        "wires": []
+    },
+    {
+        "id": "c123aba50d7ce2ab",
+        "type": "mqtt in",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "topic": "statusmeldungen",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "45d1cbe68753b295",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 140,
+        "y": 700,
+        "wires": [
+            [
+                "51a1386e33b4f642"
+            ]
+        ]
+    },
+    {
+        "id": "f0e7f730115f0802",
+        "type": "ui_switch",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "label": "Pumpe 2",
+        "tooltip": "",
+        "group": "5a3eb4f9d11c8c62",
+        "order": 2,
+        "width": 5,
+        "height": 1,
+        "passthru": true,
+        "decouple": "false",
+        "topic": "topic",
+        "topicType": "msg",
+        "style": "",
+        "onvalue": "{\"Pumpe2\":\"ON\"}",
+        "onvalueType": "json",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "{\"Pumpe2\":\"OFF\"}",
+        "offvalueType": "json",
+        "officon": "",
+        "offcolor": "",
+        "animate": false,
+        "className": "",
+        "x": 120,
+        "y": 1140,
+        "wires": [
+            [
+                "e4adcf4b340d1594"
+            ]
+        ]
+    },
+    {
+        "id": "2e3bcf6a45df39d2",
+        "type": "mqtt in",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "topic": "statusmeldungen",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "45d1cbe68753b295",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 140,
+        "y": 900,
+        "wires": [
+            [
+                "dd3e7a9bdd8d1262"
+            ]
+        ]
+    },
+    {
+        "id": "5a2d0423d3e32939",
+        "type": "debug",
+        "z": "db1b9add2227c471",
+        "name": "debug 6",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1020,
+        "y": 940,
+        "wires": []
+    },
+    {
+        "id": "dd3e7a9bdd8d1262",
+        "type": "function",
+        "z": "db1b9add2227c471",
+        "name": "function 10",
+        "func": "var gesamtmenge_zutaten = { payload: msg.payload.Gesamtmenge_Zutaten };\nreturn gesamtmenge_zutaten;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 370,
+        "y": 900,
+        "wires": [
+            [
+                "b6c9189ea5841cd6",
+                "5a2d0423d3e32939"
+            ]
+        ]
+    },
+    {
+        "id": "b6c9189ea5841cd6",
+        "type": "ui_gauge",
+        "z": "db1b9add2227c471",
+        "name": "",
+        "group": "bd21a9f89acc2b53",
+        "order": 1,
+        "width": 3,
+        "height": 3,
+        "gtype": "wave",
+        "title": "Gesamtmenge",
+        "label": "cl",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "50",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 1040,
+        "y": 900,
+        "wires": []
+    },
+    {
+        "id": "2b0d5a40d4633ffe",
+        "type": "debug",
+        "z": "db1b9add2227c471",
+        "name": "debug 7",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1020,
+        "y": 760,
+        "wires": []
+    },
+    {
+        "id": "ac09d20ea2503a2b",
+        "type": "ui_text",
+        "z": "db1b9add2227c471",
+        "group": "bd21a9f89acc2b53",
+        "order": 8,
+        "width": 3,
+        "height": 2,
+        "name": "",
+        "label": "Glas vorhanden:",
+        "format": "{{msg.payload}}",
+        "layout": "col-center",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1040,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "51a1386e33b4f642",
+        "type": "function",
+        "z": "db1b9add2227c471",
+        "name": "function 11",
+        "func": "if (msg.payload.status_glas_vorhanden === \"ON\") {\n    msg.payload = \"Ja\";\n} else {\n    msg.payload = \"Nein\";\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 370,
+        "y": 700,
+        "wires": [
+            [
+                "ac09d20ea2503a2b",
+                "2b0d5a40d4633ffe"
+            ]
+        ]
+    },
+    {
+        "id": "45d1cbe68753b295",
+        "type": "mqtt-broker",
+        "name": "RaspberryPi_Cocktailautomat",
+        "broker": "127.0.0.1",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "bd21a9f89acc2b53",
+        "type": "ui_group",
+        "name": "Cocktailautomat",
+        "tab": "f5ae9a164f918c3e",
+        "order": 1,
+        "disp": true,
+        "width": 13,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "5a3eb4f9d11c8c62",
+        "type": "ui_group",
+        "name": "Handbetrieb",
+        "tab": "247ec65c917ef8b8",
+        "order": 2,
+        "disp": true,
+        "width": 10,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "d2829fd26e2a897e",
+        "type": "MySQLdatabase",
+        "name": "cocktails_zutaten",
+        "host": "127.0.0.1",
+        "port": "3306",
+        "db": "Cocktailautomat",
+        "tz": "",
+        "charset": "UTF8"
+    },
+    {
+        "id": "f5ae9a164f918c3e",
+        "type": "ui_tab",
+        "name": "Zubereiten",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "247ec65c917ef8b8",
+        "type": "ui_tab",
+        "name": "Handbetrieb",
+        "icon": "dashboard",
+        "order": 2,
+        "disabled": false,
+        "hidden": false
+    }
+]
