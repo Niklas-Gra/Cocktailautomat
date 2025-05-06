@@ -1,8 +1,8 @@
 #---------------------------------------------------------------------------
 # Programm füt den Betrieb eines Cocktailautomaten mit Node Red bedienung
 # Ersteller : Niklas Granel
-# Datum: 05 .05.2025
-# Version 1.1
+# Datum: 06 .05.2025
+# Version 1.5
 
 #-------------------- Bibliotheken -------------------
 
@@ -11,11 +11,11 @@ import ujson
 import time
 from umqtt.simple import MQTTClient
 from machine import Pin, I2C
-from vl53l0x import VL53L0X
+from VL53L0X import VL53L0X
 
 #-------------------- Pins -------------------
-
-# Digitalausgänge
+# Pumpen sind mit digitalen Ausgängen verbunden (GPIO 35 bis 40, 2, 1)
+# HIGH = Pumpe EIN, LOW = Pumpe AUS
 
 pumpe_1 = Pin(35, Pin.OUT)
 pumpe_2 = Pin(36, Pin.OUT)
@@ -26,15 +26,19 @@ pumpe_6 = Pin(40, Pin.OUT)
 pumpe_7 = Pin(2, Pin.OUT)
 pumpe_8 = Pin(1, Pin.OUT)
 
-#Digitaleingänge
+# Eingangspin zum Erkennen, ob ein Glas vorhanden ist (LOW = kein Glas, HIGH = Glas erkannt)
 
-glas_vorhanden = Pin(4, Pin.IN) # Pulldown
+glas_vorhanden = Pin(4, Pin.IN) # Pulldownwiederstand extern
 
-#I2S
-sda = Pin(6)
-scl = Pin(7)
+# I2S Pins
+scl_1 = Pin(6)
+sda_1 = Pin(7)
+scl_2 = Pin(15)
+sda_2 = Pin(16)
 
 #-------------------- Zugänge -------------------
+# Zugangsdaten für WLAN und MQTT-Broker IP-Adresse
+# Diese werden für die Verbindung zum Netzwerk und Node-RED benötigt
 
 WIFI_ssid = "FRITZ!Box 7530 RR"
 WIFI_password = "67307380203238062131"
@@ -47,6 +51,7 @@ mqtt_topic_statusmeldungen = "statusmeldungen"
 mqtt_topic_mengen_doku = "mengen_doku"
 
 #-------------------- Pumpenleitung in cl/min -------------------
+# wird zur Berechnung der Einschaltzeit verwendet
 
 pumpenleistung = 15
 
@@ -87,11 +92,29 @@ dosierung_zutat_5 = 0
 dosierung_zutat_6 = 0
 dosierung_zutat_7 = 0
 dosierung_zutat_8 = 0
+schwellwert_zutat_1 = 250
+schwellwert_zutat_2 = 250
+fuellstand_warnung_1_gesendet = False
+fuellstand_warnung_2_gesendet = False
+letzte_messung = time.ticks_ms()
+
+#---------- Schwellwerte Füllstand in mm ----------
+# Schwellwerte in Millimetern: Ab wann soll eine Warnung gesendet werden, wenn eine FLasche fast leer ist?
+
+schwellwert_zutat_1 = 250
+schwellwert_zutat_2 = 250
 
 #---------- I2C erzeugen ----------
+# Zwei getrennte I2C-Busse für je einen VL53L0X Füllstandssensor
+# Diese Sensoren messen den Abstand zum Flüssigkeitsspiegel
 
-id = 0
-i2c = I2C(id=id, sda=sda, scl=scl)
+i2c_1 = I2C(0, sda=sda_1, scl=scl_1)
+i2c_2 = I2C(1, sda=sda_2, scl=scl_2)
+
+#---------- Sensorobjekt erzeugen ----------
+
+fuellstand_sensor_1 = VL53L0X(i2c_1)
+fuellstand_sensor_2 = VL53L0X(i2c_2)
 
 #---------- WLAN-Verbindung für Hauptprogramm ----------
 
@@ -105,11 +128,14 @@ def connect_to_wifi(WIFI_ssid, WIFI_password):
     print("Verbunden! IP:", wlan.ifconfig())
 
 #---------- Subprogramm Zutaten aufschlüsseln ----------
+# Diese Callback-Funktion wird aufgerufen, wenn MQTT-Nachrichten zum Thema "zutaten" empfangen werden.
+# Sie extrahiert die jeweilige Dosiermenge für jede Zutat aus der empfangenen JSON-Nachricht
+# und speichert sie in den globalen Variablen zutat_1 bis zutat_8.
 
 def sub_zutaten(topic, msg):
     global zutat_1, zutat_2, zutat_3, zutat_4, zutat_5, zutat_6, zutat_7, zutat_8
     try:
-        daten = ujson.loads(msg)
+        daten = ujson.loads(msg) # Umwandlung der empfangenen Nachricht von JSON in ein Python-Dictionary
         zutat_1 = daten.get("zutat_1", 0)
         zutat_2 = daten.get("zutat_2", 0)
         zutat_3 = daten.get("zutat_3", 0)
@@ -128,16 +154,17 @@ def sub_zutaten(topic, msg):
         print("Zutat 8:", zutat_8)
         gesamtmenge_zutaten = zutat_1 + zutat_2 + zutat_3 + zutat_4 + zutat_5 + zutat_6 + zutat_7 + zutat_8
         
-        #Gesamtmenge über MQTT versenden
+        #Gesamtmenge über MQTT versenden für Visualisierung
         
         nachricht_gesamtmenge_zutaten = ujson.dumps({"Gesamtmenge_Zutaten": gesamtmenge_zutaten})
-
         mqtt_client.publish(mqtt_topic_statusmeldungen, nachricht_gesamtmenge_zutaten)
         
     except Exception as e:
         print("Fehler beim Parsen:", e)
 
 #---------- Subprogramm Zubereitung starten ----------
+# Diese Funktion wird aufgerufen, wenn über MQTT das Signal zum Start der Zubereitung kommt.
+# Diese Narchicht soll nur empfangen werden, wenn auch ein Glas vorhanden ist.
 
 def sub_zubereitung_start(topic, msg):
     if glas_vorhanden.value() == 1:
@@ -150,6 +177,8 @@ def sub_zubereitung_start(topic, msg):
             print("Fehler beim Parsen:", e)
 
 #---------- Subprogramm Handbetrieb ----------
+# Diese Funktion verarbeitet MQTT-Nachrichten zum Thema "hand"
+# und schaltet die Pumpen einzeln je nach empfangenem Befehl ein oder aus.
 
 def sub_handbetrieb(topic, msg):
     global pumpe_1_hand, pumpe_2_hand, pumpe_3_hand, pumpe_4_hand
@@ -180,6 +209,7 @@ def sub_handbetrieb(topic, msg):
         print("Fehler beim Parsen oder Setzen:", e)
         
 #---------- Subprogramm Mischen ----------
+# Unterprogramm zum Automatischen zusammenmischen der Flüssigkeiten
 
 def automatische_zubereitung():
     zutaten = [
@@ -195,15 +225,21 @@ def automatische_zubereitung():
     
     for index, (menge, pumpe) in enumerate(zutaten, start=1):
         if menge > 0:
-            einschaltzeit = menge / pumpenleistung * 60  # cl → Sekunden
+            einschaltzeit = menge / pumpenleistung * 60  # Umrechnung cl → Sekunden
             print("Starte Pumpe", index, "für", einschaltzeit, "Sekunden")
             pumpe.value(1)
             time.sleep(einschaltzeit)
             pumpe.value(0)
         else:
             print("Zutat", index, "hat 0 cl – Pumpe wird nicht aktiviert")
+    
+    # Hier werden die Zutatenmengen über Node-RED an die DAtenbank gesendet
+    
+    nachricht_zutaten_datenbank = ujson.dumps({"Zutat1": zutat_1, "Zutat2": zutat_2, "Zutat3": zutat_3, "Zutat4": zutat_4, "Zutat5": zutat_5, "Zutat6": zutat_6, "Zutat7": zutat_7, "Zutat8": zutat_8 })
+    mqtt_client.publish(mqtt_topic_mengen_doku, nachricht_zutaten_datenbank) 
 
-#---------- Subprogramm globale Topicabfrage ----------
+#---------- Subprogramm Callback ----------
+# Dieses Unterprogramm richtet die Verschiedenen Callbacks ein
 
 def globale_topicabfrage(topic, msg):
     topic = topic.decode()
@@ -215,6 +251,7 @@ def globale_topicabfrage(topic, msg):
         sub_handbetrieb(topic, msg)
         
 #---------- Subprogramm reconnect MQTT ----------
+# Diese Funktion richtet die MQTT-Verbindung ein, wenn sie verloren wurde 
 
 def reconnect():
     global mqtt_client
@@ -227,17 +264,24 @@ def reconnect():
         print("Verbindung fehlgeschlagen:", e)
         time.sleep(5)
         
-#--------------- Verbindungen ---------------
+#--------------- Aktivierung WLAN verbindung ---------------
         
 connect_to_wifi(WIFI_ssid, WIFI_password)
 
 #--------------- MQTT client erzeugen -------------
+
 mqtt_client = MQTTClient(mqtt_client_id, ip_adresse_mqtt_server, keepalive=30)
 mqtt_client.set_callback(globale_topicabfrage)
 mqtt_client.connect()
 mqtt_client.subscribe(mqtt_topic_zubereiten_start)
 mqtt_client.subscribe(mqtt_topic_zutaten)
 mqtt_client.subscribe(mqtt_topic_hand)
+
+
+#--------------- Hauptschleife -------------
+# Diese Schleife wird dauerhaft ausgeführt und reagiert auf das Startsignal vom MQTT-Server.
+# Sobald das Signal "ON" empfangen wird, wird der Cocktail gemäß den gespeicherten Zutatenmengen gemischt.
+
 
 while True:
     try:
@@ -247,6 +291,8 @@ while True:
     except OSError as e:
         print("MQTT Fehler:", e)
         reconnect()
+    
+    # Hier wird der Status ob ein Glas vorhande ist per MQTT versendet
     
     aktueller_status = glas_vorhanden.value()
 
@@ -263,3 +309,35 @@ while True:
         print("Starte automatische Zubereitung...")
         automatische_zubereitung()
         start_button = "OFF"  # Zurücksetzen, um mehrfachen Start zu verhindern
+    
+    jetzt = time.ticks_ms()
+    
+    # Hier wird der Füllstand gemessen und verarbeitet
+    
+     # Nur alle 5 Sekunden messen
+    if time.ticks_diff(jetzt, letzte_messung) >= 5000:
+        fuellstand_zutat_1 = fuellstand_sensor_1.read() - 50
+        fuellstand_zutat_2 = fuellstand_sensor_2.read() - 40
+
+        # Prüfen, ob Schwellwert unterschritten wurde
+        if fuellstand_zutat_1 < schwellwert_zutat_1:
+            if not fuellstand_warnung_1_gesendet:
+                mqtt_client.publish(mqtt_topic_statusmeldungen, 
+                    ujson.dumps({"warnung_zutat_1": f"Füllstand zu niedrig: {fuellstand_zutat_1} mm"}))
+                fuellstand_warnung_1_gesendet = True
+        else:
+            fuellstand_warnung_1_gesendet = False
+
+        if fuellstand_zutat_2 < schwellwert_zutat_2:
+            if not fuellstand_warnung_2_gesendet:
+                mqtt_client.publish(mqtt_topic_statusmeldungen, 
+                    ujson.dumps({"warnung_zutat_2": f"Füllstand zu niedrig: {fuellstand_zutat_2} mm"}))
+                fuellstand_warnung_2_gesendet = True
+        else:
+            fuellstand_warnung_2_gesendet = False
+
+        # Debug-Ausgabe
+        print("Füllstand 1:", fuellstand_zutat_1)
+        print("Füllstand 2:", fuellstand_zutat_2)
+
+        letzte_messung = jetzt

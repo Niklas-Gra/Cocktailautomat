@@ -11,7 +11,7 @@ import ujson
 import time
 from umqtt.simple import MQTTClient
 from machine import Pin, I2C
-from vl53l0x import VL53L0X
+from VL53L0X import VL53L0X
 
 #-------------------- Pins -------------------
 
