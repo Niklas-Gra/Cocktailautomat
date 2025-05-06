@@ -1,8 +1,8 @@
 from micropython import const
 import ustruct
 import utime
-from machine import Timer
-import time
+# from machine import Timer
+# import time
 
 _IO_TIMEOUT = 1000
 _SYSRANGE_START = const(0x00)
@@ -109,10 +109,11 @@ class TimeoutError(RuntimeError):
     pass
 
 
-class VL53L0X:
+class VL53L0X():
     def __init__(self, i2c, address=0x29):
         self.i2c = i2c
         self.address = address
+        utime.sleep_ms(100) # give the I2C time to init
         self.init()
         self._started = False
         self.measurement_timing_budget_us = 0
@@ -132,6 +133,12 @@ class VL53L0X:
                          "final_range_us": 0
                          }
         self.vcsel_period_type = ["VcselPeriodPreRange", "VcselPeriodFinalRange"]
+
+    def ping(self):
+        self.start()
+        distance = self.read()
+        self.stop()
+        return distance
 
     def _registers(self, register, values=None, struct='B'):
         if values is None:
@@ -482,7 +489,7 @@ class VL53L0X:
                 self._register(FINAL_RANGE_CONFIG_VALID_PHASE_HIGH, 0x10)
                 self._register(FINAL_RANGE_CONFIG_VALID_PHASE_LOW, 0x08)
                 self._register(GLOBAL_CONFIG_VCSEL_WIDTH, 0x02)
-                self._(ALGO_PHASECAL_CONFIG_TIMEOUT, 0x0C)
+                self._register(ALGO_PHASECAL_CONFIG_TIMEOUT, 0x0C)
                 self._register(0xFF, 0x01)
                 self._register(ALGO_PHASECAL_LIM, 0x30)
                 self._register(0xFF, 0x00)
@@ -636,11 +643,18 @@ class VL53L0X:
         return True
 
     def perform_single_ref_calibration(self, vhv_init_byte):
-        chrono = Timer.Chrono()
+        
+        # Pico MicroPython doesn't have a Chrono class, so the line below is commented out
+        # chrono = Timer.Chrono()
+        
         self._register(SYSRANGE_START, 0x01|vhv_init_byte)
-        chrono.start()
+
+        # Instead of using the chrono class, I'll just capture the current time
+        chrono_start = utime.ticks_ms()
         while self._register((RESULT_INTERRUPT_STATUS & 0x07) == 0):
-            time_elapsed = chrono.read_ms()
+
+            # elapsed time is juse the current time minus the start time.
+            time_elapsed = utime.ticks_ms() - chrono_start
             if time_elapsed > _IO_TIMEOUT:
                 return False
         self._register(SYSTEM_INTERRUPT_CLEAR, 0x01)
