@@ -2,7 +2,7 @@
 # Programm füt den Betrieb eines Cocktailautomaten mit Node Red bedienung
 # Ersteller : Niklas Granel
 # Datum: 06 .05.2025
-# Version 1.5
+# Version 2
 
 #-------------------- Bibliotheken -------------------
 
@@ -28,7 +28,7 @@ pumpe_8 = Pin(1, Pin.OUT)
 
 # Eingangspin zum Erkennen, ob ein Glas vorhanden ist (LOW = kein Glas, HIGH = Glas erkannt)
 
-glas_vorhanden = Pin(4, Pin.IN) # Pulldownwiederstand extern
+glas_vorhanden = Pin(4, Pin.IN) # Pulldownwiderstand extern
 
 # I2S Pins
 scl_1 = Pin(6)
@@ -40,9 +40,9 @@ sda_2 = Pin(16)
 # Zugangsdaten für WLAN und MQTT-Broker IP-Adresse
 # Diese werden für die Verbindung zum Netzwerk und Node-RED benötigt
 
-WIFI_ssid = "FRITZ!Box 7530 RR"
-WIFI_password = "67307380203238062131"
-ip_adresse_mqtt_server = "192.168.178.36"
+WIFI_ssid = "BZTG-IoT"
+WIFI_password = "WerderBremen24"
+ip_adresse_mqtt_server = "192.168.1.145"
 mqtt_client_id = "esp32_cocktailautomat"
 mqtt_topic_zubereiten_start = "zubereiten_start"
 mqtt_topic_zutaten = "zutaten"
@@ -233,7 +233,7 @@ def automatische_zubereitung():
         else:
             print("Zutat", index, "hat 0 cl – Pumpe wird nicht aktiviert")
     
-    # Hier werden die Zutatenmengen über Node-RED an die DAtenbank gesendet
+    # Hier werden die Zutatenmengen über Node-RED an die Datenbank gesendet
     
     nachricht_zutaten_datenbank = ujson.dumps({"Zutat1": zutat_1, "Zutat2": zutat_2, "Zutat3": zutat_3, "Zutat4": zutat_4, "Zutat5": zutat_5, "Zutat6": zutat_6, "Zutat7": zutat_7, "Zutat8": zutat_8 })
     mqtt_client.publish(mqtt_topic_mengen_doku, nachricht_zutaten_datenbank) 
